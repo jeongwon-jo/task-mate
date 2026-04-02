@@ -135,6 +135,9 @@
   font-family: "Pretendard", sans-serif;
 }
 
+.fc .fc-button-group>.fc-button {
+  margin-right: 4px;
+}
 .fc .fc-toolbar-title {
   font-family: "PaperLogy", sans-serif;
   font-size: 1.125rem !important;
@@ -182,6 +185,7 @@
   align-items: center;
   justify-content: center;
   font-size: 0.75rem;
+  padding: 0rem;
 }
 
 .fc .fc-event {

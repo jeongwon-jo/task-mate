@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useCallback, useMemo } from "react";
+import { startOfMonth, endOfMonth } from "date-fns";
 import { useQuery } from "@tanstack/react-query";
 import FullCalendar from "@fullcalendar/react";
 import dayGridPlugin from "@fullcalendar/daygrid";
@@ -8,19 +9,24 @@ import timeGridPlugin from "@fullcalendar/timegrid";
 import interactionPlugin from "@fullcalendar/interaction";
 import { format } from "date-fns";
 import { ko } from "date-fns/locale";
-import { Plus, ChevronLeft, ChevronRight } from "lucide-react";
+import { Plus } from "lucide-react";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
 import { CreateTaskModal } from "@/components/tasks/CreateTaskModal";
 import { TaskDetailModal } from "@/components/tasks/TaskDetailModal";
 import { useTaskStore } from "@/store/taskStore";
 import { Task, PRIORITY_CONFIG } from "@/types";
 
-async function fetchAllTasks(): Promise<{ tasks: Task[] }> {
-  const res = await fetch("/api/tasks?limit=500");
+async function fetchTasksByMonth(from: string, to: string): Promise<{ tasks: Task[] }> {
+  const res = await fetch(`/api/tasks?limit=200&dueDateFrom=${from}&dueDateTo=${to}`);
   if (!res.ok) throw new Error("Failed to fetch tasks");
+  return res.json();
+}
+
+async function fetchUpcomingTasks(): Promise<{ tasks: Task[] }> {
+  const res = await fetch("/api/tasks/upcoming");
+  if (!res.ok) throw new Error("Failed to fetch upcoming tasks");
   return res.json();
 }
 
@@ -32,28 +38,37 @@ const PRIORITY_COLORS: Record<string, string> = {
 };
 
 const STATUS_COLORS: Record<string, string> = {
-  TODO: "#60A5FA",
-  IN_PROGRESS: "#FB923C",
-  DONE: "#4ADE80",
+  TODO: "#93C5FD",
+  IN_PROGRESS: "#F9A8D4",
+  DONE: "#6EE7B7",
   CANCELLED: "#9CA3AF",
 };
 
 export default function CalendarPage() {
   const { openCreateModal, openDetailModal } = useTaskStore();
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
-  const [calendarRef, setCalendarRef] = useState<any>(null);
+  const [currentMonth, setCurrentMonth] = useState<Date>(new Date());
+
+  const monthFrom = startOfMonth(currentMonth).toISOString();
+  const monthTo = endOfMonth(currentMonth).toISOString();
 
   const { data, isLoading } = useQuery({
-    queryKey: ["tasks", { limit: 500 }],
-    queryFn: fetchAllTasks,
+    queryKey: ["tasks", "calendar", monthFrom, monthTo],
+    queryFn: () => fetchTasksByMonth(monthFrom, monthTo),
+  });
+
+  const { data: upcomingData } = useQuery({
+    queryKey: ["tasks", "upcoming"],
+    queryFn: fetchUpcomingTasks,
   });
 
   const tasks = data?.tasks ?? [];
+  const upcomingTasks = upcomingData?.tasks ?? [];
 
   const events = useMemo(() =>
     tasks
-      .filter((t) => t.dueDate)
-      .map((t) => ({
+      .filter((t: Task) => t.dueDate)
+      .map((t: Task) => ({
         id: t.id,
         title: t.title,
         date: format(new Date(t.dueDate!), "yyyy-MM-dd"),
@@ -76,7 +91,7 @@ export default function CalendarPage() {
     if (!selectedDate) return [];
     const dateStr = format(selectedDate, "yyyy-MM-dd");
     return tasks.filter(
-      (t) => t.dueDate && format(new Date(t.dueDate), "yyyy-MM-dd") === dateStr
+      (t: Task) => t.dueDate && format(new Date(t.dueDate), "yyyy-MM-dd") === dateStr
     );
   }, [selectedDate, tasks]);
 
@@ -87,6 +102,11 @@ export default function CalendarPage() {
 
   const handleDateClick = useCallback((info: any) => {
     setSelectedDate(new Date(info.date));
+  }, []);
+
+  const handleDatesSet = useCallback((info: any) => {
+    // 캘린더가 월 이동할 때 currentMonth 업데이트
+    setCurrentMonth(new Date(info.view.currentStart));
   }, []);
 
   return (
@@ -124,6 +144,7 @@ export default function CalendarPage() {
                   events={events}
                   eventClick={handleEventClick}
                   dateClick={handleDateClick}
+                  datesSet={handleDatesSet}
                   height="auto"
                   aspectRatio={1.6}
                   dayMaxEvents={3}
@@ -173,7 +194,7 @@ export default function CalendarPage() {
                   </p>
                 ) : (
                   <div className="space-y-2">
-                    {selectedDateTasks.map((task) => (
+                    {selectedDateTasks.map((task: Task) => (
                       <button
                         key={task.id}
                         className="w-full text-left rounded-lg p-2.5 hover:bg-accent transition-colors border"
@@ -201,18 +222,12 @@ export default function CalendarPage() {
           <Card>
             <CardContent className="p-4">
               <p className="text-sm font-medium mb-3">마감 임박</p>
-              {tasks
-                .filter((t) =>
-                  t.dueDate &&
-                  t.status !== "DONE" &&
-                  t.status !== "CANCELLED" &&
-                  new Date(t.dueDate) >= new Date()
-                )
-                .sort((a, b) =>
-                  new Date(a.dueDate!).getTime() - new Date(b.dueDate!).getTime()
-                )
-                .slice(0, 5)
-                .map((task) => (
+              {upcomingTasks.length === 0 ? (
+                <p className="text-xs text-muted-foreground text-center py-3">
+                  마감 임박 항목이 없어요
+                </p>
+              ) : (
+                upcomingTasks.map((task: Task) => (
                   <button
                     key={task.id}
                     className="w-full text-left rounded-lg p-2.5 hover:bg-accent transition-colors border mb-2 last:mb-0"
@@ -223,7 +238,8 @@ export default function CalendarPage() {
                       {format(new Date(task.dueDate!), "M월 d일", { locale: ko })}
                     </p>
                   </button>
-                ))}
+                ))
+              )}
             </CardContent>
           </Card>
         </div>

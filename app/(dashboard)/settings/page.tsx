@@ -6,8 +6,9 @@ import { useTheme } from "next-themes";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import {
   User, Palette, Clock, Bell, Trash2, Plus, Edit2, Save, X,
-  Briefcase, GraduationCap, Search, MoreHorizontal,
+  Briefcase, GraduationCap, Search, MoreHorizontal, BellOff, BellRing,
 } from "lucide-react";
+import { usePushNotification } from "@/hooks/usePushNotification";
 import { DashboardLayout } from "@/components/layout/DashboardLayout";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -142,6 +143,8 @@ export default function SettingsPage() {
     }
   };
 
+  const { permission, subscription, loading: pushLoading, subscribe, unsubscribe } = usePushNotification();
+
   const themes = [
     { value: "light", label: "라이트", icon: "☀️" },
     { value: "dark", label: "다크", icon: "🌙" },
@@ -171,6 +174,10 @@ export default function SettingsPage() {
           </TabsTrigger>
           <TabsTrigger value="categories">
             카테고리
+          </TabsTrigger>
+          <TabsTrigger value="notifications">
+            <Bell className="h-4 w-4 mr-1.5" />
+            알림
           </TabsTrigger>
         </TabsList>
 
@@ -476,6 +483,100 @@ export default function SettingsPage() {
                   ))
                 )}
               </div>
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        {/* Notifications Tab */}
+        <TabsContent value="notifications">
+          <Card>
+            <CardHeader>
+              <CardTitle>알림 설정</CardTitle>
+              <CardDescription>브라우저 푸시 알림을 설정하세요</CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-6">
+              {permission === "unsupported" ? (
+                <div className="rounded-xl bg-muted p-4 text-sm text-muted-foreground">
+                  이 브라우저는 푸시 알림을 지원하지 않습니다.
+                </div>
+              ) : (
+                <>
+                  {/* 알림 상태 카드 */}
+                  <div className={`rounded-xl p-4 flex items-center gap-4 ${
+                    subscription
+                      ? "bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800"
+                      : "bg-muted"
+                  }`}>
+                    <div className={`h-10 w-10 rounded-xl flex items-center justify-center shrink-0 ${
+                      subscription ? "bg-green-100 dark:bg-green-900/40" : "bg-background"
+                    }`}>
+                      {subscription
+                        ? <BellRing className="h-5 w-5 text-green-600" />
+                        : <BellOff className="h-5 w-5 text-muted-foreground" />
+                      }
+                    </div>
+                    <div className="flex-1">
+                      <p className="font-medium text-sm">
+                        {subscription ? "알림이 활성화되어 있습니다" : "알림이 비활성화되어 있습니다"}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-0.5">
+                        {subscription
+                          ? "마감 임박 할 일과 출퇴근 리마인더를 받습니다"
+                          : "알림을 켜면 중요한 순간을 놓치지 않아요"}
+                      </p>
+                    </div>
+                    {subscription ? (
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={unsubscribe}
+                        loading={pushLoading}
+                        className="shrink-0"
+                      >
+                        알림 끄기
+                      </Button>
+                    ) : (
+                      <Button
+                        size="sm"
+                        onClick={subscribe}
+                        loading={pushLoading}
+                        disabled={permission === "denied"}
+                        className="shrink-0"
+                      >
+                        알림 켜기
+                      </Button>
+                    )}
+                  </div>
+
+                  {permission === "denied" && (
+                    <div className="rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 p-4 text-sm text-red-600 dark:text-red-400">
+                      브라우저에서 알림을 차단했습니다. 브라우저 설정에서 이 사이트의 알림 권한을 허용해주세요.
+                    </div>
+                  )}
+
+                  {/* 알림 종류 안내 */}
+                  <div className="space-y-3">
+                    <p className="text-sm font-medium">받을 수 있는 알림</p>
+                    {[
+                      { icon: "⏰", title: "마감 임박 알림", desc: "할 일 마감 24시간 이내에 알림을 보냅니다" },
+                      { icon: "🏢", title: "출근 리마인더", desc: "설정된 출근 시간 10분 전에 알림을 보냅니다" },
+                      { icon: "🏠", title: "퇴근 리마인더", desc: "설정된 퇴근 시간에 체크 알림을 보냅니다" },
+                    ].map((item) => (
+                      <div key={item.title} className="flex items-start gap-3 rounded-xl border p-3">
+                        <span className="text-xl">{item.icon}</span>
+                        <div>
+                          <p className="text-sm font-medium">{item.title}</p>
+                          <p className="text-xs text-muted-foreground">{item.desc}</p>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+
+                  <p className="text-xs text-muted-foreground">
+                    알림은 5분마다 확인되며, 출퇴근 시간은 근무 시간 탭에서 변경할 수 있습니다.
+                  </p>
+                </>
+              )}
             </CardContent>
           </Card>
         </TabsContent>

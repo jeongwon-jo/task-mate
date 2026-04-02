@@ -19,6 +19,7 @@ import { useTasks } from "@/hooks/useTasks";
 import { Badge } from "@/components/ui/badge";
 import { Task, TaskStatus, Priority } from "@/types";
 
+// 카테고리 : 개인이 추가할 수 있는 카테고리 (회원마다 가지는 카테고리가 다름)
 async function fetchCategories() {
   const res = await fetch("/api/categories");
   if (!res.ok) throw new Error("Failed to fetch categories");

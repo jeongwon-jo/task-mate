@@ -116,12 +116,12 @@ export function TaskCard({ task, compact }: TaskCardProps) {
         {/* Meta */}
         <div className="mt-2 flex flex-wrap items-center gap-1.5">
           {/* Priority */}
-          <Badge variant={task.priority.toLowerCase() as any} dot className="text-[11px] py-0">
+          <Badge variant={task.priority.toLowerCase() as any} dot className="text-[10px] py-0.5">
             {priorityConfig.label}
           </Badge>
 
           {/* Status */}
-          <Badge variant={task.status.toLowerCase().replace("_", "-") as any} className="text-[11px] py-0">
+          <Badge variant={task.status.toLowerCase().replace("_", "-") as any} className="text-[10px] py-0.5">
             {statusConfig.label}
           </Badge>
 

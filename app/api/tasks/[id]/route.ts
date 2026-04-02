@@ -29,15 +29,16 @@ async function verifyOwner(taskId: string, userId: string) {
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const { id } = await params;
   const task = await prisma.task.findFirst({
-    where: { id: params.id, userId: session.user.id },
+    where: { id, userId: session.user.id },
     include: taskInclude,
   });
 
@@ -50,14 +51,15 @@ export async function GET(
 
 export async function PATCH(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const existing = await verifyOwner(params.id, session.user.id);
+  const { id } = await params;
+  const existing = await verifyOwner(id, session.user.id);
   if (!existing) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
@@ -67,7 +69,7 @@ export async function PATCH(
     const data = updateTaskSchema.parse(body);
 
     const task = await prisma.task.update({
-      where: { id: params.id },
+      where: { id },
       data: {
         ...(data.title !== undefined && { title: data.title }),
         ...(data.description !== undefined && { description: data.description }),
@@ -95,19 +97,20 @@ export async function PATCH(
 
 export async function DELETE(
   req: NextRequest,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   const session = await auth();
   if (!session?.user?.id) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  const existing = await verifyOwner(params.id, session.user.id);
+  const { id } = await params;
+  const existing = await verifyOwner(id, session.user.id);
   if (!existing) {
     return NextResponse.json({ error: "Task not found" }, { status: 404 });
   }
 
-  await prisma.task.delete({ where: { id: params.id } });
+  await prisma.task.delete({ where: { id } });
 
   return NextResponse.json({ success: true });
 }

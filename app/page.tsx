@@ -398,7 +398,7 @@ export default function LandingPage() {
             </div>
             <span className="font-paperlogy font-bold text-brand-600">Taskmate</span>
           </div>
-          <p className="text-sm text-muted-foreground">© 2025 Taskmate. All rights reserved.</p>
+          <p className="text-sm text-muted-foreground">© 2026 Taskmate. All rights reserved.</p>
         </div>
       </footer>
     </div>

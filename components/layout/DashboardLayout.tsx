@@ -7,6 +7,7 @@ import { MobileNav } from "./MobileNav";
 import { TopBar } from "./TopBar";
 import { AttendanceWidget } from "@/components/attendance/AttendanceWidget";
 import { UserTypeModal } from "@/components/UserTypeModal";
+import { NotificationManager } from "@/components/NotificationManager";
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -34,6 +35,7 @@ export function DashboardLayout({ children, title }: DashboardLayoutProps) {
       <MobileNav />
       <AttendanceWidget />
       <UserTypeModal />
+      <NotificationManager />
     </div>
   );
 }

@@ -49,6 +49,9 @@ export default function DashboardPage() {
     refetchInterval: 60000,
   });
 
+  console.log(stats);
+  
+
   const greeting = () => {
     const hour = new Date().getHours();
     if (hour < 12) return "좋은 아침이에요";

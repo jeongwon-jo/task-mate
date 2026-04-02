@@ -35,6 +35,9 @@ export async function GET(req: NextRequest) {
   const page = parseInt(searchParams.get("page") || "1");
   const limit = parseInt(searchParams.get("limit") || "20");
 
+  const dueDateFrom = searchParams.get("dueDateFrom");
+  const dueDateTo = searchParams.get("dueDateTo");
+
   const where: Prisma.TaskWhereInput = {
     userId: session.user.id,
     ...(status && { status: status as any }),
@@ -43,6 +46,12 @@ export async function GET(req: NextRequest) {
     ...(search && {
       title: { contains: search, mode: "insensitive" as const },
     }),
+    ...(dueDateFrom || dueDateTo ? {
+      dueDate: {
+        ...(dueDateFrom && { gte: new Date(dueDateFrom) }),
+        ...(dueDateTo && { lte: new Date(dueDateTo) }),
+      },
+    } : {}),
   };
 
   const orderBy: Prisma.TaskOrderByWithRelationInput =

@@ -17,7 +17,7 @@ import { formatDateTime, isOverdue } from "@/lib/utils";
 import { TaskForm } from "./TaskForm";
 
 export function TaskDetailModal() {
-  const { isDetailModalOpen, selectedTask, closeDetailModal, openEditModal } = useTaskStore();
+  const { isDetailModalOpen, selectedTask, closeDetailModal, openEditModal, setSelectedTask } = useTaskStore();
   const [isEditing, setIsEditing] = useState(false);
   const [noteContent, setNoteContent] = useState("");
   const updateTask = useUpdateTask();
@@ -35,13 +35,14 @@ export function TaskDetailModal() {
   };
 
   const handleComplete = async () => {
-    await updateTask.mutateAsync({
+    const updated = await updateTask.mutateAsync({
       id: selectedTask.id,
       data: {
         status: selectedTask.status === "DONE" ? "TODO" : "DONE",
         completedAt: selectedTask.status === "DONE" ? null : new Date().toISOString(),
       },
     });
+    setSelectedTask(updated);
   };
 
   if (isEditing) {

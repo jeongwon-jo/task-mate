@@ -188,16 +188,16 @@ export const PRIORITY_CONFIG: Record<
 };
 
 export const CATEGORY_COLORS = [
-  "#4D0E91",
-  "#7C3AED",
-  "#2563EB",
-  "#0891B2",
-  "#059669",
-  "#65A30D",
-  "#D97706",
-  "#DC2626",
-  "#DB2777",
-  "#7C3AED",
+  "#C4B5FD", // 라벤더 퍼플
+  "#A5B4FC", // 소프트 인디고
+  "#93C5FD", // 스카이 블루
+  "#67E8F9", // 민트 시안
+  "#6EE7B7", // 소프트 그린
+  "#BEF264", // 라임 그린
+  "#FDE68A", // 소프트 옐로우
+  "#FCA5A5", // 로즈 핑크
+  "#F9A8D4", // 베이비 핑크
+  "#D9F99D", // 페일 그린
 ];
 
 export const CATEGORY_ICONS = [
