@@ -1,15 +1,16 @@
-import { auth } from "@/lib/auth";
+import NextAuth from "next-auth";
+import { authConfig } from "@/auth.config";
 import { NextResponse } from "next/server";
+
+const { auth } = NextAuth(authConfig);
 
 export default auth((req) => {
   const { pathname } = req.nextUrl;
   const isAuthenticated = !!req.auth;
 
-  // Protected routes
   const protectedPaths = ["/dashboard", "/tasks", "/calendar", "/analytics", "/settings"];
   const isProtected = protectedPaths.some((p) => pathname.startsWith(p));
 
-  // Auth routes (should redirect to dashboard if already logged in)
   const authPaths = ["/login", "/signup"];
   const isAuthPage = authPaths.includes(pathname);
 
