@@ -3,6 +3,8 @@ import { prisma } from "@/lib/prisma";
 import { PrismaAdapter } from "@auth/prisma-adapter";
 import bcrypt from "bcryptjs";
 import NextAuth from "next-auth";
+import Google from "next-auth/providers/google";
+import GitHub from "next-auth/providers/github";
 import Credentials from "next-auth/providers/credentials";
 import Kakao from "next-auth/providers/kakao";
 
@@ -10,6 +12,16 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
   ...authConfig,
   adapter: PrismaAdapter(prisma),
   providers: [
+    Google({
+      clientId: process.env.AUTH_GOOGLE_ID!,
+      clientSecret: process.env.AUTH_GOOGLE_SECRET!,
+      allowDangerousEmailAccountLinking: true,
+    }),
+    GitHub({
+      clientId: process.env.AUTH_GITHUB_ID!,
+      clientSecret: process.env.AUTH_GITHUB_SECRET!,
+      allowDangerousEmailAccountLinking: true,
+    }),
     Kakao({
       clientId: process.env.AUTH_KAKAO_ID!,
       clientSecret: process.env.AUTH_KAKAO_SECRET!,
