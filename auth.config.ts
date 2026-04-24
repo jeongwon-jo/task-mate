@@ -1,14 +1,7 @@
 import type { NextAuthConfig } from "next-auth";
-import Google from "next-auth/providers/google";
-import GitHub from "next-auth/providers/github";
-import Kakao from "next-auth/providers/kakao";
 
 export const authConfig: NextAuthConfig = {
-  providers: [
-    Google,
-    GitHub,
-    Kakao,
-  ],
+  providers: [],
   session: {
     strategy: "jwt",
   },
